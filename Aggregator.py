@@ -9,7 +9,7 @@ import Singleton
 class Aggregator(CsvIO, JsonIO, Singleton):
     """ Inherits Singleton properties. Single instance of class referenced in Singleton._instances {}.
 
-        Class Parameters:
+        Class Attributes:
         :param collection: dict: dictionary of objects where the keys are unique primary_ids associated with the
         respective values/object
         :param _filename: str:  Holds the name of the file for save / restore methods"""
@@ -79,7 +79,7 @@ class Aggregator(CsvIO, JsonIO, Singleton):
     def search(self, obj_uid):
         """ Method to find an object in self.collection
         :param obj_uid: str :  The unique id for the object to be found
-        :returns the object with obj_id from self.collections. """
+        :returns:  the object with obj_id from self.collections. """
 
         if obj_uid in self.collection:
             return self.collection[obj_uid]
