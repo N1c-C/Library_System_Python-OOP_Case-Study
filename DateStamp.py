@@ -2,14 +2,14 @@ import time
 import calendar
 
 class Date:
-    """ Holds a single date integer in Microsoft Excel epoch format as a str.
-        date: integer - represents the Number of days since 1/1/1900.
-        If no argument, current date set. Methods provided to set/return
-        date in string format 'd/m/y' or integer value.
-        Requires time and calendar modules. """
+    """ Class to hold a single date. Includes methods to convert between the Microsoft Excel format
+    and the typical str format 'd/m/y'"""
 
     def __init__(self, date='default'):
-
+        """ :param date: int: Excel format - represents the Number of days since 1/1/1900.
+                If no date argument is provided then the current date is set
+            :raises TypeError: If the supplied value is not an integer
+        """
         if date == 'default':
             self.date = str(self._system_to_excel())
         elif isinstance(date, int):
@@ -21,11 +21,16 @@ class Date:
         return self.date
 
     def _diff_in_days(self):
-        """ Returns int: difference between Excel & O.S. epoch dates in days.
-            O.S. independent: allows for different systems epoch standards
-            Calculated as: number of days + leap days,  between dates """
+        """ Operating systems having differernt epoch standards. 
+            Unix: 1/1/1970
+            Windows: 1/1/1601
+            This method makes the adjustment between the OS epoch and the Excel Epoch (OS independent)
+        returns int: difference between Excel & O.S. epoch dates in days.
+            Calculated as: number of days + leap days,  between the two dates """
 
         SYSTEM_EPOCH = time.gmtime(0).tm_year  # year of day 0 for current O.S.
+        
+        #find the number of leap days between the two
         leap_days = 0
 
         for x in range(min(1900, SYSTEM_EPOCH), 1 + max(1900, SYSTEM_EPOCH)):
@@ -37,7 +42,7 @@ class Date:
         if SYSTEM_EPOCH < 1900:
             leap_days *= -1
 
-        # + 1 day : Excel counts 1/1/1900 as day 1
+        # + 1 day : Excel counts 1/1/1900 as day 1 and not day 0
         return (SYSTEM_EPOCH - 1900) * 365 + leap_days + 1
 
     def _system_to_excel(self, date=time.time()):  # Default = current time
@@ -49,7 +54,7 @@ class Date:
 
         no_of_days = int(date / (60 * 60 * 24)) + self._diff_in_days()
 
-        # 29/02/1900 = day 59
+        # 29/02/1900 = day 59 - adjustment if the date is before the first recorded laep day
         return no_of_days if no_of_days < 60 else no_of_days + 1
 
     def as_val(self):
