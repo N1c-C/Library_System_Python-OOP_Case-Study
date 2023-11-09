@@ -14,13 +14,13 @@ class CsvIO:
         if the file is not in current dictionary.
 
         Optional kwargs:
-        :param Fields: List of str:  A list of column names for the csv values.
-        :param Start_line: int:  The first line of csv to start reading the data from
+        :param 'Fields': List of str:  A list of column names for the csv values.
+        :param 'Start_line': int:  The first line of csv to start reading the data from
 
         The newline indicator is set as '' and the encoding is set as  'utf-8-sig'
 
         :raises Exception: When invalid arguments are passed
-        :raises FileNotFound
+        :raises FileNotFound: If the CSV filename/path is incorrect or does not exist
 
         :returns:  a list of dictionaries (each relating to a row in the csv)."""
 
