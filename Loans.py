@@ -1,5 +1,5 @@
 """
-
+Classes that provide methods to create and maintain loans between Member() and BookItem() instances
 """
 
 from Aggregator import Aggregator
@@ -7,13 +7,17 @@ from DateStamp import Date
 
 
 class LoanItem:
-    """    """
+    """ Holds the attributes of a single loan. Instantiated when a loan starts."""
 
     def __init__(self, book_uid, member_uid, start_date='default', return_date=0):
-        """ Holds attributes of a single loan. Instantiated when a loan starts.
-            book_uid, uid: int as strings
-            start_date, return_date: Date() objects
-            return_date set to '0' until book returned """
+        """
+        :param book_uid: int as str:
+        :param member_uid: int as str:
+        :param start_date: Int or 'default'
+        :param return_date: Int
+
+        :raises TypeError if the uid or date values are incorrect types
+        """
 
         if not isinstance(book_uid, str) or not isinstance(member_uid, str):
             raise TypeError("LoanItem: Object_id should be in string format")
@@ -31,8 +35,8 @@ class LoanItem:
         return str(self.__dict__)
 
     def as_dict(self):
-        """ Returns object's attributes as a dictionary
-            Replaces date objects with the date value stored in the object."""
+        """ :returns object's attributes as a dictionary
+                converts date objects to the date value stored in the object."""
         dct = self.__dict__.copy()
         for key in dct:
             if hasattr(dct[key], 'date'):
@@ -40,9 +44,9 @@ class LoanItem:
         return dct
 
     def as_json_dict(self):
-        """ Returns object's attributes as a dictionary. Adds a class value
-            for custom Json decoder Replaces date objects with the date
-            value stored in the object."""
+        """ :returns object's attributes as a dictionary
+                Adds a 'class' key and value for the custom JSON decoder
+                Converts date objects to the date value stored in the object."""
         dct = self.__dict__.copy()
         for key in dct:
             if hasattr(dct[key], 'date'):
@@ -52,10 +56,14 @@ class LoanItem:
 
     @staticmethod
     def create(attributes):
-        """ Returns a Loan instance created from attributes dictionary
-            keys = {'book_uid':, member_uid':, 'start_date':, 'return_date':}
-            book_uid, member_uid values: int as a string
-            return / start date: int as string"""
+        """
+        :returns a Loan instance created from an attributes dictionary
+                keys = {'book_uid':, member_uid':, 'start_date':, 'return_date':}
+                book_uid, member_uid values: int as a string
+                return_date, start_date: int as string
+
+        :raises Exception: If arg is not a dict
+        """
 
         if isinstance(attributes, dict):  # Guardian check for correct type
             book_uid = attributes.get('book_uid', '')
@@ -67,20 +75,22 @@ class LoanItem:
             raise Exception('Argument should be dictionary of attributes')
 
     def start_date_obj(self):
-        """ Returns start_date object """
+        """ :returns start_date object """
         return self.start_date
 
     def ret_date_obj(self):
-        """ Returns return_date object """
+        """ :returns return_date object """
         return self.return_date
 
 
 class Loans(Aggregator):
-    """ Inherits Singleton properties. Single instance of class stored in
-        Singleton._instances {}.
+    """
+    Class to store and manipulate all book loans
+        Inherits Singleton properties.
         Aggregates LoanItem  Objects.
-        Loans are stored in self.collection{}. Key = 'book_uid-member_uid'
-        Key value = list of LoanItem objects. Current loan = last list item
+        Loans are stored in self.collection{}.
+            The Keys = 'book_uid-member_uid'
+            Key values = list of LoanItem objects. The Current loan is the last item in the list
         _filename holds name of file for save / restore methods as a string
         """
 
@@ -98,15 +108,14 @@ class Loans(Aggregator):
 
     def read_csv(self, filename, **kwargs):
         """ Overloads Parent method to load csv data into collection.
-            if loan not in collection generates Loan() object,using
-            Loan().create static method"""
+                If the loan is not in self.collection then a Loan() instance is created using yhe Loan().create method
+        """
 
         for line in super().read_csv(filename, **kwargs):
             self.add(LoanItem.create(line))
-        return
 
     def add(self, loan_item):
-        """ Adds a Loan object to collection{} with compound key
+        """ Adds a Loan instance to collection{} with compound key
             The key value is a list of LoanItems.
             The current loan is appended to the end of the list
             loan_item must be an instance of LoanItem() """
@@ -121,24 +130,25 @@ class Loans(Aggregator):
         return
 
     def _make_json_dict(self):
-        """Returns self.collection unpacked as a json compatible dictionary"""
+        """:returns: self.collection unpacked as a json compatible dictionary"""
         dct = {}
         for key in self.collection:
             dct[key] = [obj.as_json_dict() for obj in self.collection[key]]
         return dct
 
     def search(self, book_uid, member_uid):
-        """Returns the list of LoanItems with compound key"""
-        return super().search(book_uid + '-' + member_uid)
+        """:returns: The list of LoanItems with the compound key"""
+        return super().get(book_uid + '-' + member_uid)
 
     def start_loan(self, book_uid, member_uid):
-        """ Starts a new loan using default date values.
-             start_date = current date,  return_date = 0 """
+        """ Starts a new loan using the default date values.
+                start_date = current date,  return_date = 0 """
         self.add(LoanItem(book_uid, member_uid))
 
     def return_book(self, book_uid, member_uid):
-        """ Returns integer: the length of loan in days
-            Searches for most recent loan with book-member key.
+        """
+        :returns int: The length of loan in days
+            Searches for most recent loan with book-member compound key.
             Sets the return_date to the current date"""
 
         loan_item = self.search(book_uid, member_uid)[-1]
@@ -150,29 +160,35 @@ class Loans(Aggregator):
         return loan_item.return_date.as_val() - loan_item.start_date.as_val()
 
     def member_loans(self, member_uid):
-        """ Returns a list of the current loans a member has.
-            member_uid: int as string. Splits the compound key and searches on
-            the member part for current loans (return_date = 0) """
+        """
+         Finds the active loans for a library member
+
+        :param member_uid: int as str: Member id -
+        :return: A list of the current loan instances associated with the member arg .
+        """
 
         current_loans = []
 
         for key in self.collection:
-            # Slices out the right side of the hyphen to get member_uid part only
-            if key[key.find('-') + 1:] == member_uid:
+            # Slices out the right side of the hyphen to get member_uid part only of the compound key
+            # Looks for books with the return_date set to 0 i.e. still on loan
+            if key[key.search('-') + 1:] == member_uid:
                 if int(self.collection[key][-1].return_date.date) == 0:
-                    # adds the LoanItem to the list if return_date is set to 0
                     current_loans.append(self.collection[key][-1])
         return current_loans
 
     def on_loan_to(self, book_uid):
-        """ book_uid: int as string
-            Splits the compound_key
-            Returns the uid of the member who currently loans the book
-            with book_uid - as a string. None if not on loan"""
+        """
+        Finds which member currently has a particular book on loan
+
+        :param book_uid: int as string
+        :return: int as str or None: The uid of the member who currently loans the book
+                or None if the book is not loaned
+        """
 
         for key in self.collection:
-            # Slices out the left side of the hyphen to get book_uid part only
-            if key[:key.find('-')] == book_uid:
+            # Slices out the left side of the hyphen to get book_uid part only of the compound key
+            if key[:key.search('-')] == book_uid:
                 # Returns uid if book still on loan
                 if int(self.collection[key][-1].return_date.date) == 0:
                     return self.collection[key][-1].member_uid

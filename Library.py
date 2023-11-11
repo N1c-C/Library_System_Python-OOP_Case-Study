@@ -1,9 +1,11 @@
-"""Definitions for the Library Classes of the Entities and their Relationships"""
+"""Definitions for the Library and Book Classes along with the System interfaces used by
+the Librarians to carry out their every day activities"""
 
 from Aggregator import Aggregator
 from JsonIO import JsonIO
 from Membership import Membership, Member
 from Notifications import CardNotification, FineNotification
+from Observer import Subject
 
 
 class Library(Aggregator):
@@ -19,7 +21,7 @@ class Library(Aggregator):
         :raises Exception; If the object is not a BookItem instance"""
 
         if isinstance(book, BookItem):
-            super().add(book.uid, book)
+            super().add(book)
         else:
             raise Exception(f'{book} Must be a BookItem object')
         return
@@ -145,25 +147,33 @@ class BookItem:
 class MembersInterface(JsonIO):
 
     def __init__(self, membership, notify):
-        """Provides an conceptual interface for library membership functions.
-            membership: Membership() instance containing all members"""
+        """Provides a conceptual interface for library membership functions.
+            :param membership: Membership() instance containing all members
+            :param notify: Subject() instance that deals with notifications on Event triggers
+
+            :raises TypeError: if membership or notify are not the correct type of object"""
 
         if isinstance(membership, Membership):
             self.membership = membership
         else:
-            raise TypeError("MembersInterface(): Invalid type passed:")
+            raise TypeError("MembersInterface(): Invalid membership type passed:")
+
+        if isinstance(notify, Subject):
+            self.notify = notify
+        else:
+            raise TypeError("MembersInterface(): Invalid subject type passed:")
 
         # List to hold daily applications. Cleared once send_list has been called
         self.new_members = []
         self.filename = 'new_members'
-        self.notify = notify
 
-    def save(self):
-        """Saves self.new_members to self.filename in a JSON file"""
+    def save(self, file=''):
+        """Saves new_members to a JSON file"""
         super().save(self.filename)
 
-    def restore(self):
-        """Restores self.new_members from JSON file with name self.filename"""
+    def restore(self, file=''):
+        """Restores new_members from a JSON file
+        :raises FileNotFound; If the backup file does not exist"""
         backup = self.new_members.copy()
         try:
             self.new_members = super().restore(self.filename)
@@ -172,15 +182,17 @@ class MembersInterface(JsonIO):
             print(f'Unable to restore from file {self.filename}')
 
     def _make_json_dict(self):
-        """ Returns collection unpacked into a list of dictionaries
-            for json compatibility """
+        """ :returns: The new member list unpacked into a list of dictionaries for json compatibility """
+
         return [member.as_json_dict() for member in self.new_members]
 
     def add_member(self, **kwargs):
-        """ Creates a new library Member() instance. Adds it to the membership
-            and self.new_members list.
-            *kwargs: Should match Member attribute keywords
-            first_name = ' ',last_name = ' ', gender = ' ', email = ' '"""
+        """
+        Creates a new library Member() instance and adds it to the membership.
+
+            :param kwargs: Should match Member attribute keywords
+            first_name = ' ',last_name = ' ', gender = ' ', email = ' '
+        """
         new_mem = Member().create(kwargs)
         new_mem.uid = self.membership.next_id()
         self.membership.add(new_mem)
@@ -189,10 +201,14 @@ class MembersInterface(JsonIO):
         self.save()
         self.restore()
 
-    def send_list(self):
-        """Prints out the days list of new applications for the card
-        manufacturer Clears self.new_members afterwards"""
-        print('\nDetails for New Membership Cards sent to printers\n')
+    def new_member_list(self):
+        """
+        Obtains the current list of new applications for card manufacture/further processing.
+                Currently only prints the data.
+                Clears self.new_members afterwards
+        """
+
+        print('\nDetails for New Membership Cards\n')
         for member in self.new_members:
             print(f'{member.first_name} {member.last_name} with card number:'
                   f'{member.uid}1')
@@ -201,16 +217,19 @@ class MembersInterface(JsonIO):
         # Re-save to clear list
 
     def update_card(self, *args):
-        """Updates the card_number for members. Automatically increments issue
-            number and adds it to the end of member_uid to form card_id
-            *args list of member_ids with new cards."""
+        """
+        Updates the card_number for members. Automatically increments issue number and adds it to the end
+        of member_uid to form card_id
+
+        :param args: list of member_ids in string format who have new cards.
+        """
         for member_uid in args:
-            member = self.membership.search(member_uid)
+            member = self.membership.get(member_uid)
             # gets the last digit in card_number and adds 1
             member.card_number = member.uid + str(int(member.card_number[-1]) + 1)
 
             # Notifications
-            self.notify.sendEmail('NewCards', CardNotification(member))
+            self.notify.send_email('NewCards', CardNotification(member))
             print('\n', '-' * 70)
             print('Console')
             print(f'\nCard details for {member.first_name} {member.last_name} '
@@ -219,8 +238,7 @@ class MembersInterface(JsonIO):
         self.membership.save()
 
     def waiting_for_card(self):
-        """Returns list of member.uids as strings: All members waiting for
-            a card to be issued. Checks card number = '0'"""
+        """:returns: List of str: A list of the member ids who are waiting for a card to be issued."""
 
         card_lst = []
         for uid in self.membership.all_members():
@@ -229,12 +247,16 @@ class MembersInterface(JsonIO):
         return card_lst
 
 
-class LoansInterface(object):
+class LoansInterface:
     def __init__(self, loans, membership, library, reservations, notify):
-        """ loans: Loans() Instance - Aggregator of LoanItems()
-            membership: Membership() - Aggregator of Members()
-            library: Library() - Aggregator of BookItems()
-            Provides an interface for borrowing and returning books"""
+        """
+        Provides an interface for borrowing and returning books
+        :param loans: Instance of the Library Loans Object
+        :param membership: Instance of the Membership
+        :param library: Instance of a Library
+        :param reservations: Instance of the reservations
+        :param notify: Instance of a Subject for event notifications
+        """
 
         self.loans = loans
         self.membership = membership
@@ -244,9 +266,11 @@ class LoansInterface(object):
         self.DAILY_FINE = 1.0  # Fine amount / day for late returns
 
     def _has_max_loans(self, member):
-        """ loans_obj: Loans() instance. member: Member() instance
-            Tests if members loans < max allowed
-            Returns bool: If True, prints out the list of books on loan """
+        """
+        Test to see if a member has the maximum number of loans
+        :param member: A Member() instance
+        :return: Bool:
+        """
 
         if member.loans() >= self.loans.MAX_LOANS:
             print('\n', '-' * 70)
@@ -260,15 +284,19 @@ class LoansInterface(object):
         return False
 
     def _fine_due(self, book, member):
-        """ Retrieves the last loan between member and book
-            Searches on the compound key: 'book_uid-member_uid
-            Calculates the fine for an overdue book. Prints to console
-            Adds fine to member.fines, saves the membership data"""
+        """
+        Retrieves the last recorded loan between member and book and calculates the fine for an overdue book.
+        Prints to the console and sends a Notification to the member
+            Searches on the compound key: 'book_uid-member_uid'
+            Adds any fine to member's fine total.
+            Saves the membership data
+        :param book: A Book Instance
+        :param member: A member Instance
+        """
 
         last_loan = self.loans.search(book.uid, member.uid)[-1]
 
-        days_over_due = (last_loan.return_date.as_val()) - (
-            last_loan.start_date.as_val()) - 14
+        days_over_due = (last_loan.return_date.as_val()) - (last_loan.start_date.as_val()) - self.loans.MAX_DURATION
         fine = days_over_due * self.DAILY_FINE
         print('\n', '-' * 70)
         print(f'\nFine due for book: {book.title}\n'
@@ -280,22 +308,24 @@ class LoansInterface(object):
 
         # Send Notification
         self.notify.sendEmail('Loans', FineNotification(member, book, days_over_due, fine))
-        return
 
     def checkout_books(self, member_of_public, *presented_books):
-        """ member_of_public: a Member() instance. - represents a real person
-            presented_books: BookItem() instances. - books they want to loan
-            Scans the member_of_public & presented books for id.
+        """
+        Scans the member_of_public & presented books.
             Retrieves the relevant member / books instances to simulate library kiosk.
             Checks for fines due, number of loans and book's status.
-            Starts a loan if all conditions are ok. Saves the data to file"""
+            Starts a loan if all conditions are ok. Saves the data to file
+
+        :param member_of_public: a Member() instance.
+        :param presented_books: a BookItem() instance or list of BookItem() instances
+        :raises TypeError: If incorrect instance type are passed
+        """
 
         if isinstance(member_of_public, Member):
             # retrieves member instance after scanning their card
             member = self.membership.search(member_of_public.scan())
         else:
-            print("Invalid Class: Expecting object of type Member() checkouts")
-            return
+            raise TypeError("Invalid Class: Expecting object of type Member() checkouts")
 
         if member.has_fine():
             print(f'{member.first_name} {member.last_name} has an '
@@ -303,9 +333,7 @@ class LoansInterface(object):
         else:
             for item in presented_books:
                 if not isinstance(item, BookItem):
-                    print('Invalid Class: Expecting presented book of type'
-                          'BookItem() checkouts')
-                    continue
+                    raise TypeError('Invalid Class: Expecting presented book of type BookItem()')
                 # retrieves book instance after scanning barcode
                 book = self.library.search(item.scan())
                 # check member does not exceed loans.MAX_LOANs
@@ -335,7 +363,7 @@ class LoansInterface(object):
                             # Remove person from front of reservation queue
                             self.lib_reservations.cancel_res(book.uid, member.uid)
 
-                            # Add to Loans Observers
+                            # Add to the member to the Loans Observers
                             self.notify.register('Loans', member.uid)
 
                         print(f'{book.title}: is {book.status}', end='')
@@ -348,14 +376,16 @@ class LoansInterface(object):
         self.loans.save()
         self.membership.save()
         self.library.save()
-        return
 
     def return_books(self, *presented_books):
-        """ presented_books: BookItem instances - books being returned
-            Scans the presented books for id. Uses it to obtain uid
+        """
+        Scans the presented books and obtains the uid
             Sets loan return_date to current date.
-            If overdue adds fine to library member at £1 per day
-            saves the data to file"""
+            If a book is overdue then adds a fine to the library member at the daily rate
+            saves the data to file
+        :param presented_books: str: A list of book ids to be returned
+        :return:
+        """
 
         for item in presented_books:
             if not isinstance(item, BookItem):
@@ -382,24 +412,31 @@ class LoansInterface(object):
         self.loans.save()
         self.membership.save()
         self.library.save()
-        return
 
 
 class ReservationInterface:
     def __init__(self, reservations, membership, library):
-        """ reservations: Reservations() instance containing all members
-            membership: Membership() instance containing all members
-            library: Library() instance containing all books
-            Provides an interface for borrowing and returning books"""
+        """
+        Provides an interface for reserving books
+
+        :param reservations: Reservations() instance containing book reservations
+        :param membership: Membership() instance containing all members'
+        :param library: Library() instance containing all books
+        """
 
         self.reservations = reservations
         self.membership = membership
         self.library = library
 
     def make_reservation(self, member_of_public, book_uid):
-        """ Scans the member and makes a reservation for the book with uid.
-            If the book is already reserved adds them to the book's queue.
-            uid: int as string. member_of_public: Member() instance"""
+        """
+         Scans the member_of_public and makes a reservation for a given book.
+                If the book is already reserved then the member is added to the book's queue.
+                Saves the updated reservations to file
+
+        :param member_of_public: Member() instance
+        :param book_uid: int as str:
+        """
         member = self.membership.search(member_of_public.scan())
         book = self.library.search(book_uid)
         self.reservations.make_reservation(book.uid, member.uid)

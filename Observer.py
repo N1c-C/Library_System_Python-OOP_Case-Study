@@ -4,6 +4,12 @@ from JsonIO import JsonIO
 class Observer:
     """ Observer class to the Subject. Inherited by Members() to provide
         an email notification system"""
+
+    def __init__(self):
+        self.email = None
+        self.first_name = None
+        self.uid = None
+
     def send_email(self, notice):
         if notice.all:  # if the message has an all flag it is printed
             print(f'Emailed to {self.email}\n' 
@@ -24,12 +30,12 @@ class Subject(JsonIO):
         self.filename = filename
         self.lib_membership = membership
 
-    def save(self):
-        """Saves self.events to self.filename in a JSON file"""
+    def save(self, file=''):
+        """Saves the events a JSON file"""
         super().save(self.filename)
 
-    def restore(self):
-        """Restores self.events from JSON file with name self.filename"""
+    def restore(self, file=''):
+        """Restores events from a JSON file"""
         backup = self.events.copy()
         try:
             self.events = super().restore(self.filename)

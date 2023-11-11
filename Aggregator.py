@@ -65,18 +65,17 @@ class Aggregator(CsvIO, JsonIO, Singleton):
 
         super().save(self._filename)
 
-    def add(self, obj_uid, obj):
-        """ Adds an object to self.collection
+    def add(self, obj):
+        """ Adds an object to self.collection by calling the parent Aggregator.add() method
         :param obj: cls: The object to be added
-        :param obj_uid: str: The unique id for the object
         :raises Exception: If there is a duplicate obj_id key"""
-
+        obj_uid = obj.uid
         if obj_uid in self.collection:
             raise Exception("Duplicate primary_id for object")
         else:
             self.collection[obj_uid] = obj
 
-    def search(self, obj_uid):
+    def get(self, obj_uid):
         """ Method to find an object in self.collection
         :param obj_uid: str :  The unique id for the object to be found
         :returns:  the object with obj_id from self.collections. """

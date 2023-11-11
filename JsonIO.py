@@ -18,7 +18,8 @@ class CustomDecode(json.JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self.dict_to_obj)
 
     @staticmethod
-    def dict_to_obj(self, dct):
+    def dict_to_obj(dct):
+        obj = dct
         if 'class' in dct.keys():
             if dct['class'] == '__BookItem__':
                 obj = BookItem.create(dct)
@@ -28,15 +29,13 @@ class CustomDecode(json.JSONDecoder):
                 obj = LoanItem.create(dct)
             if dct['class'] == '__ReservationItem__':
                 obj = ReservationItem.create(dct)
-        else:
-            # Use the standard decoder. For error  checking and parsing
-            obj = dct
         return obj
 
 
 class JsonIO:
     """ A Mixin class which provides methods to read and write objects to a file
         in json format """
+    filename = ''
 
     def _make_json_dict(self):
         """  The method provides a data structure that is storable in a json file.
@@ -47,6 +46,7 @@ class JsonIO:
         """ Saves the list of dict returned from a class' _make_json_dict method to self._filename in json format.
             :param file: str: the file name to save to without a suffix
             :raises Exception: If the file can not be written """
+        file = self.filename
         try:
             with open(file + '.json', mode='w',
                       encoding='utf-8-sig') as JsonFile:

@@ -83,7 +83,7 @@ class Date:
             self.date = str(self._system_to_excel(date_val))
 
         except ValueError:
-            print('Date should be in the format d/m/year')
+            print('Date should be in the format dd/mm/yyyy')
         return
 
     def as_date(self):

@@ -1,6 +1,5 @@
 from Aggregator import Aggregator
 from DateStamp import Date
-from Membership import Member
 from Notifications import ResNotification
 
 
@@ -133,7 +132,7 @@ class Reservations(Aggregator):
             None returned if there are no reservations
             book_uid: int as string"""
 
-        return self.collection.get(book_uid, None)[0]  # Indexes oldest reservation
+        return self.collection.get(book_uid, None)[0]  # Indexes the oldest reservation
 
     def queue(self, book_uid):
         """ Returns the queue of ReservationItem instances for the book
@@ -152,7 +151,7 @@ class Reservations(Aggregator):
                     return index
             else:
                 return None
-        except:
+        except Exception:
             raise TypeError("None type is not iterable ")
 
     def get_reservation(self, book_uid, member_uid):
