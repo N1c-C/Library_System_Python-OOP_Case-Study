@@ -167,9 +167,9 @@ class MembersInterface(JsonIO):
         self.new_members = []
         self.filename = 'new_members'
 
-    def save(self, file=''):
+    def save(self):
         """Saves new_members to a JSON file"""
-        super().save(self.filename)
+        super().save_to_file(self.filename)
 
     def restore(self, file=''):
         """Restores new_members from a JSON file

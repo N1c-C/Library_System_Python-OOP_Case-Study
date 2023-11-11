@@ -1,3 +1,8 @@
+"""
+Classes that provide methods to create and maintain reservations between Member() and ReservationItem() instances
+"""
+
+
 from Aggregator import Aggregator
 from DateStamp import Date
 from Notifications import ResNotification
@@ -6,10 +11,17 @@ from Notifications import ResNotification
 class ReservationItem:
 
     def __init__(self, book_uid, member_uid, date_made='default'):
-        """ Holds attributes of a book and the member that has reserved it.
+        """
+        Holds the attributes of a book and the member that has reserved it.
             Instantiated when a reservation is made.
-            uid, uid: int as strings
-            date_made: Date() object set to current date on instantiation """
+
+            date_made: Date() object set to current date on instantiation
+        :param book_uid: int as str: The unique id of a book
+        :param member_uid: int as str: The unique id of the member making the reservation
+        :param date_made: int or 'default': The date in seconds from 1/1/1900
+
+        :raises: TypeError: If the UIDs are not in string format
+        """
 
         if not isinstance(book_uid, str) or not isinstance(member_uid, str):
             raise TypeError("Reservation: Object_id should be in string format")
@@ -19,8 +31,11 @@ class ReservationItem:
         self.date_made = Date(date_made)
 
     def as_dict(self):
-        """ Returns instances' attributes as a dictionary
-            Replaces date objects with the date value it stores"""
+        """
+        :returns: The instances' attributes as a dictionary
+                        Replaces Date objects with the date value it stores
+        """
+
         dct = self.__dict__.copy()
         for key in dct:
             if hasattr(dct[key], 'date'):
@@ -28,9 +43,11 @@ class ReservationItem:
         return dct
 
     def as_json_dict(self):
-        """ Returns instances' attributes as a dictionary. Adds class key for
-            custom JSON decoder Replaces date objects with the date
-            value it stores"""
+        """
+        :returns: The instances' attributes as a dictionary
+                        Adds class key and value for the custom JSON decoder
+                        Replaces Date objects with the date value it stores
+        """
 
         dct = self.__dict__.copy()
         for key in dct:
@@ -41,10 +58,15 @@ class ReservationItem:
 
     @staticmethod
     def create(attributes):
-        """ Returns a ReservationItem instance created from attributes dict
-            keys = {'uid':, member_uid':, 'date_made': }
-            book_uid, member_uid values: int as a string
-            return / start date: int as string"""
+        """
+        Instantiates ReservationItem() instance from an attributes dict
+                keys = {'uid':, member_uid':, 'date_made': }
+
+        :param attributes: dict:
+        :return: ReservationItem():
+
+        :raises TypeError: If attributes is not a dict
+        """
 
         if isinstance(attributes, dict):  # Guardian check for correct type
             book_uid = attributes.get('book_uid', '')
@@ -52,24 +74,28 @@ class ReservationItem:
             date_made = (int(attributes.get('date_made', '')))
             return ReservationItem(book_uid, member_uid, date_made)
         else:
-            raise Exception('Argument should be dictionary of attributes')
+            raise TypeError('Argument should be dictionary of attributes')
 
 
 class Reservations(Aggregator):
-    """ Inherits Singleton properties. Single instance of class stored in
-        Singleton._instances {}.
-        Aggregates ReservationItem()  Instances.
-        ReservationItems are stored in self.collection{}. Key = 'uid'
-        Key value = list of ReservationItem objects for that book.
-        Next member in queue: first item. Most recent reservation: last item.
-        _filename holds name of file for save / restore methods as a string
-        """
+    """
+    Class to create and manipulate book reservations for library members
+            ReservationItems are stored in self.collection dictionary.
+                {Key = 'uid', Value = list of ReservationItem objects for that book}
+                Next member in a books reservation queue: first list item.
+    """
 
-    _filename = 'reservations'  # default file name for JsonIO
+    _filename = 'reservations'  # default file name for JsonIO Save and restore functions
     collection = {}
 
     def _init__(self, library, membership, notifications):
-        """Binds library attribute to Library() instance"""
+        """
+        :param library: Library() instance
+        :param membership: Membership() instance
+        :param notifications: Subject() instance
+        :return:
+        """
+
         self.library = library
         self.lib_membership = membership
         self.notifications = notifications
@@ -82,9 +108,13 @@ class Reservations(Aggregator):
         return str(dct)
 
     def add(self, res_item):
-        """ Adds a Reservation object to collection{} with book_uid as key
-            The current res_item is appended to the end of the list
-            res_item must be an instance of ReservationItem() """
+        """
+        Adds a reservation for a book
+            The reservation is appended to the end of the list for the given book
+
+        :param res_item: ReservationItem()
+        :raises TypeError; If res_item is not a ReservationItem() instance
+        """
         if isinstance(res_item, ReservationItem):
 
             if res_item.book_uid in self.collection:
@@ -96,26 +126,33 @@ class Reservations(Aggregator):
         return
 
     def _make_json_dict(self):
-        """ Returns self.collection unpacked into a json compatible dict.
-            Keeps primary key. Values = a list of ReservationItem objects
-            as dictionaries"""
+        """
+        :return: self.collection unpacked into a JSON compatible dict.
+                    Keeps primary key. Values = the list of ReservationItem(s) converted to dictionaries
+        """
         dct = {}
         for key in self.collection:
             dct[key] = [obj.as_json_dict() for obj in self.collection[key]]
         return dct
 
     def make_reservation(self, book_uid, member_uid):
-        """ uid, uid: int as string
-            Makes a reservation for the book by the member.
-            book_uid: int as string member_uid: int as string"""
+        """
+        Makes a reservation between a book and a member and notifies the library member it has been made
+        :param book_uid: int as str:
+        :param member_uid: int as str:
+        """
+
         self.add(ReservationItem(book_uid, member_uid))
         # Called when NOTIFY Flag set
         self.notify.register('Reservations', member_uid)
 
     def cancel_res(self, book_uid, member_uid):
-        """ book_uid, member_uid: int as string
-            Cancels first reservation for the book by the member.
-            """
+        """
+        Cancels the first reservation for the book by the member.
+
+        :param book_uid: int as str
+        :param member_uid: int as str
+        """
         if book_uid in self.collection:
 
             for index, res_item in enumerate(self.collection[book_uid]):
@@ -127,24 +164,37 @@ class Reservations(Aggregator):
                 self.collection.pop(book_uid)
 
     def next_res(self, book_uid):
-        """ Returns the ReservationItem instance at front of the queue, for
-            the book with uid.
-            None returned if there are no reservations
-            book_uid: int as string"""
+        """
+        Gets the next reservation for a book
+
+        :param book_uid: int as str:
+        :return: The ReservationItem instance at front of the queue for the book
+                      Returns None if there are no reservations
+        """
 
         return self.collection.get(book_uid, None)[0]  # Indexes the oldest reservation
 
     def queue(self, book_uid):
-        """ Returns the queue of ReservationItem instances for the book
-            with uid.
-            None returned if there are no reservations
-            book_uid: int as string"""
+        """
+        Gets the queue of reservations for a book
+
+        :param book_uid: int as str:
+        :return: List: The list of reservations for the given book
+                      Returns None if there are no reservations
+        """
         return self.collection.get(book_uid, None)
 
     def queue_pos(self, book_uid, member_uid):
-        """ Returns the queue position of a member for a given book_uid,
-            Returns None if no reservation found
-            book_uid: int as string member_uid: int as string"""
+        """
+         Gets the queue position of a member for a given book_uid,
+                Returns None if no reservation found
+
+        :param book_uid: int as str
+        :param member_uid: int as str
+        :return: int: the list index representing where the member is in the queue
+
+        :raises ValueError: If the queue is empty
+        """
         try:
             for index, res_item in enumerate(self.queue(book_uid)):
                 if res_item.member_uid == member_uid:
@@ -152,22 +202,32 @@ class Reservations(Aggregator):
             else:
                 return None
         except Exception:
-            raise TypeError("None type is not iterable ")
+            raise ValueError("The queue is empty")
 
     def get_reservation(self, book_uid, member_uid):
-        """ Returns the ReservationItem Instance for a book by a Member
-            book_uid: int as string  member_uid: int as string"""
+        """
+        :param book_uid: int as str:
+        :param member_uid: int as str:
+        :return: The ReservationItem() instance for a book by a Member
+        """
         return self.queue(book_uid)[self.queue_pos(book_uid, member_uid)]
 
     def has_reservations(self, book_uid):
-        """Returns bool: True if book has a reservations list
-            book_uid: int as string"""
+        """
+        :param book_uid: int as str
+        :return: Bool: True if book has a reservations list
+        """
         return True if book_uid in self.collection else False
 
     def status_update(self, book):
-        """ Receives status update from loans when a book is checked in
-            if book is reserved then sets  books status to reserved
-            book: BookItem instance"""
+        """
+         Performs a status update when a book is checked in
+                If the book is reserved then sets the books status to reserved and
+                notifies the next member in the queue
+                Otherwise the book is made available
+
+        :param book: BookItem() instance
+        """
         if self.has_reservations(book.uid):
             book.set_reserved()
             res = self.next_res(book.uid)

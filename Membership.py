@@ -1,3 +1,7 @@
+"""
+Classes that provide methods to create and maintain the library membership
+"""
+
 from Aggregator import Aggregator
 from Observer import Observer
 

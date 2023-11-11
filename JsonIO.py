@@ -42,7 +42,7 @@ class JsonIO:
         The method is overloaded by child classes as necessary """
         return {}
 
-    def save(self, file):
+    def save_to_file(self, file):
         """ Saves the list of dict returned from a class' _make_json_dict method to self._filename in json format.
             :param file: str: the file name to save to without a suffix
             :raises Exception: If the file can not be written """
