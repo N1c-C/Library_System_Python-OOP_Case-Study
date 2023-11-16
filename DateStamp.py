@@ -4,7 +4,7 @@ import calendar
 
 class Date:
     """ Class to hold a single date. Includes methods to convert between the Microsoft Excel format
-    and the typical str format 'd/m/y'"""
+    and the typical str format d/m/y """
 
     def __init__(self, date='default'):
         """ :param date: int: Excel format - represents the Number of days since 1/1/1900.
