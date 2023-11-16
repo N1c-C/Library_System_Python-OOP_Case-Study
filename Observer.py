@@ -1,7 +1,7 @@
 """
 Observer and Subject Classes to implement a notification system
 """
-from JsonIO import JsonIO
+from _JsonIO import _JsonIO
 
 
 class Observer:
@@ -24,7 +24,7 @@ class Observer:
             print(notice.message)
 
 
-class Subject(JsonIO):
+class Subject(_JsonIO):
     def __init__(self, membership):
         """
         The Subject class (observable) of an Observer Pattern.

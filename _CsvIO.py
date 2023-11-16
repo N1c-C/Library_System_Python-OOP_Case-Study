@@ -3,7 +3,7 @@
 import csv
 
 
-class CsvIO:
+class _CsvIO:
     """Mixin class to provide a static method to read from a CSV file.
     The class is not intended to be instantiated on its own, hence there is no constructor method"""
 

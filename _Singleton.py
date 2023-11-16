@@ -1,4 +1,4 @@
-class Singleton:
+class _Singleton:
     """An inherited Singleton class that allows one instance of a particular class to exist. The instances are
      stored in the class dictionary: _instances.
     Each instantiation of a new class creates a new entry in _instances."""
@@ -20,9 +20,12 @@ class Singleton:
 
     @classmethod
     def get_instance(cls):
-        """ Class method to return the current instance. If the instance does not
-            exist, a new one is created.
-            :returns : the instance of cls"""
+        """
+        Class method to return the current instance.
+            If the instance does not exist, a new one is created.
+
+        :returns : the instance of cls
+        """
 
         if cls not in cls._instances:
             cls()
@@ -33,7 +36,7 @@ class Singleton:
         """ Tests to see if a particular singleton class has already been instantiated
         :param item_cls : str: name of a class
         :returns :  Bool"""
-        for c in Singleton._instances:
-            if isinstance(Singleton._instances[c], eval(item_cls)):
+        for c in _Singleton._instances:
+            if isinstance(_Singleton._instances[c], eval(item_cls)):
                 return True
         return False

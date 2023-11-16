@@ -1,10 +1,7 @@
 """Classes to enable JSON read and write functionality """
 
 import json
-from Library import BookItem
-from Loans import LoanItem
-from Membership import Member
-from Reservations import ReservationItem
+from abc import ABC, abstractmethod
 
 
 class CustomDecode(json.JSONDecoder):
@@ -19,6 +16,10 @@ class CustomDecode(json.JSONDecoder):
 
     @staticmethod
     def dict_to_obj(dct):
+        from Library import BookItem
+        from Loans import LoanItem
+        from Membership import Member
+        from Reservations import ReservationItem
         obj = dct
         if 'class' in dct.keys():
             if dct['class'] == '__BookItem__':
@@ -32,11 +33,12 @@ class CustomDecode(json.JSONDecoder):
         return obj
 
 
-class JsonIO:
+class _JsonIO(ABC):
     """ A Mixin class which provides methods to read and write objects to a file
         in json format """
     filename = ''
 
+    @abstractmethod
     def _make_json_dict(self):
         """  The method provides a data structure that is storable in a json file.
         The method is overloaded by child classes as necessary """

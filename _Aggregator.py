@@ -1,21 +1,24 @@
 """The Aggregator class contains a collection of other classes. This script defines a parent Aggregator
 that is inherited by various entities and relationships"""
 
-import CsvIO
-import JsonIO
-import Singleton
+import _CsvIO
+import _JsonIO
+import _Singleton
 
 
-class Aggregator(CsvIO, JsonIO, Singleton):
-    """ Inherits Singleton properties. Single instance of class referenced in Singleton._instances {}.
+class _Aggregator:
+    """ An inherited class to store relationships.
 
         Class Attributes:
-        :param collection: dict: dictionary of objects where the keys are unique primary_ids associated with the
+        :collection: dict: dictionary of objects where the keys are unique primary_ids associated with the
         respective values/object
-        :param _filename: str:  Holds the name of the file for save / restore methods"""
+        :_filename: str:  Holds the name of the file for save / restore methods"""
 
     _filename = 'default'
     collection = {}  # dictionary of objects
+
+    def __init__(self):
+        pass
 
     def __len__(self):
         """Returns the number of objects in self.collection """

@@ -3,7 +3,7 @@ Classes that provide methods to create and maintain reservations between Member(
 """
 
 
-from Aggregator import Aggregator
+from _Aggregator import _Aggregator
 from DateStamp import Date
 from Notifications import ResNotification
 
@@ -77,7 +77,7 @@ class ReservationItem:
             raise TypeError('Argument should be dictionary of attributes')
 
 
-class Reservations(Aggregator):
+class Reservations(_Aggregator):
     """
     Class to create and manipulate book reservations for library members
             ReservationItems are stored in self.collection dictionary.
