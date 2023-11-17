@@ -1,7 +1,7 @@
 """
 Observer and Subject Classes to implement a notification system
 """
-from _JsonIO import _JsonIO
+from JsonIO import _JsonIO
 
 
 class Observer:
