@@ -2,11 +2,11 @@
 Classes that provide methods to create and maintain the library membership
 """
 
-from _Aggregator import _Aggregator
+from Aggregator import _Aggregator
 from Observer import Observer
-import _CsvIO
-import _JsonIO
-import _Singleton
+import CsvIO
+import JsonIO
+import Singleton
 
 
 class Member(Observer):
