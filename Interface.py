@@ -1,4 +1,4 @@
-from _JsonIO import _JsonIO
+from JsonIO import _JsonIO
 from Library import BookItem
 from Membership import Membership, Member
 from Notifications import CardNotification, FineNotification
