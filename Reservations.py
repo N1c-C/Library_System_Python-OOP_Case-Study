@@ -3,7 +3,7 @@ Classes that provide methods to create and maintain reservations between Member(
 """
 
 
-from _Aggregator import _Aggregator
+from Aggregator import _Aggregator
 from DateStamp import Date
 from Notifications import ResNotification
 
