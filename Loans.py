@@ -2,10 +2,10 @@
 Classes that provide methods to create and maintain loans between Member() and BookItem() instances
 """
 
-from _Aggregator import _Aggregator
-import _CsvIO
-import _JsonIO
-import _Singleton
+from Aggregator import _Aggregator
+import CsvIO
+import JsonIO
+import Singleton
 from DateStamp import Date
 
 
