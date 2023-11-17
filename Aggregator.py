@@ -1,10 +1,6 @@
 """The Aggregator class contains a collection of other classes. This script defines a parent Aggregator
 that is inherited by various entities and relationships"""
 
-import _CsvIO
-import _JsonIO
-import _Singleton
-
 
 class _Aggregator:
     """ An inherited class to store relationships.
