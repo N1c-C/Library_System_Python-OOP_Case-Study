@@ -1,10 +1,10 @@
 """Definitions for the Library and Book Classes along with the System interfaces used by
 the Librarians to carry out their every day activities"""
 
-from _Aggregator import _Aggregator
-from _CsvIO import _CsvIO
-from _JsonIO import _JsonIO
-from _Singleton import _Singleton
+from Aggregator import _Aggregator
+from CsvIO import _CsvIO
+from JsonIO import _JsonIO
+from Singleton import _Singleton
 
 
 class Library(_Aggregator, _CsvIO, _JsonIO, _Singleton):
