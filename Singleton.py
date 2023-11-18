@@ -10,13 +10,13 @@ class _Singleton:
         __new__ is the first method called during class instantiation.
         :returns: A new instance of the class if it does not exist otherwise returns the instance that already exits"""
 
-        if cls not in cls._instances:
+        if str(cls) not in cls._instances:
             # uses super() to call the base class' __new__ method to instantiate a new instance
             instance = super().__new__(cls)
-            cls._instances[cls] = instance
+            cls._instances[str(cls)] = instance
             return instance
         else:
-            return cls._instances[cls]
+            return cls._instances[str(cls)]
 
     @classmethod
     def get_instance(cls):
@@ -27,9 +27,9 @@ class _Singleton:
         :returns : the instance of cls
         """
 
-        if cls not in cls._instances:
+        if str(cls) not in cls._instances:
             cls()
-        return cls._instances[cls]
+        return cls._instances[str(cls)]
 
     @staticmethod
     def instance_exists(item_cls):
