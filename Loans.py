@@ -175,7 +175,7 @@ class Loans(_Aggregator, _JsonIO, _CsvIO,  _Singleton):
         for key in self.collection:
             # Slices out the right side of the hyphen to get member_uid part only of the compound key
             # Looks for books with the return_date set to 0 i.e. still on loan
-            if key[key.search('-') + 1:] == member_uid:
+            if key[key.find('-') + 1:] == member_uid:
                 if int(self.collection[key][-1].return_date.date) == 0:
                     current_loans.append(self.collection[key][-1])
         return current_loans
@@ -191,7 +191,7 @@ class Loans(_Aggregator, _JsonIO, _CsvIO,  _Singleton):
 
         for key in self.collection:
             # Slices out the left side of the hyphen to get book_uid part only of the compound key
-            if key[:key.search('-')] == book_uid:
+            if key[:key.find('-')] == book_uid:
                 # Returns uid if book still on loan
                 if int(self.collection[key][-1].return_date.date) == 0:
                     return self.collection[key][-1].member_uid

@@ -192,11 +192,10 @@ class LoansInterface:
             print(f'{member.first_name} {member.last_name} has an '
                   f'overdue fine of £{member.fines}')
         else:
-            for item in presented_books:
-                if not isinstance(item, BookItem):
-                    raise TypeError('Invalid Class: Expecting presented book of type BookItem()')
+            for uid in presented_books:
+
                 # retrieves book instance after scanning barcode
-                book = self.library.search(item.scan())
+                book = self.library.search(uid.scan())
                 # check member does not exceed loans.MAX_LOANs
 
                 if not self._has_max_loans(member):
@@ -205,11 +204,11 @@ class LoansInterface:
                         # starts loan & updates: member.loans, book.status
                         self.loans.start_loan(book.uid, member.uid)
                         member.inc_loans()
-                        book.set_onloan()
+                        book.set_on_loan()
 
                         # Add member to Loans Observers for overdue books etc
                         self.notify.register('Loans', member.uid)
-                    else:
+                    elif book.is_reserved():
                         """" check to see if the member is the first person
                             in the reservation que. If they are then they
                             can loan the book"""
@@ -224,14 +223,14 @@ class LoansInterface:
                             # Remove person from front of reservation queue
                             self.lib_reservations.cancel_res(book.uid, member.uid)
 
-                            # Add to the member to the Loans Observers
+                            # Add the member to the Loans Observers
                             self.notify.register('Loans', member.uid)
 
-                        print(f'{book.title}: is {book.status}', end='')
-                        if book.is_onloan():
-                            print(f' to {member.first_name} {member.last_name}')
-                        else:
-                            print(f': {member.first_name} {member.last_name} unable to loan it')
+                    elif book.is_on_loan():
+                        libmem = self.membership.search(self.loans.on_loan_to(book.uid))
+                        print(f'{book.title}: is already on loan', end='')
+                        print(f' to {libmem.first_name} {libmem.last_name}: Unable to loan it')
+
                 else:
                     break  # Max loans reached. Stop checking out books
         self.loans.save()

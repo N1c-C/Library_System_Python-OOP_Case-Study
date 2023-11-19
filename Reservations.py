@@ -90,17 +90,18 @@ class Reservations(_Aggregator, _JsonIO, _Singleton):
     _filename = 'reservations'  # default file name for JsonIO Save and restore functions
     collection = {}
 
-    def _init__(self, library, membership, notifications):
+    def __init__(self, library, membership, notify):
         """
         :param library: Library() instance
         :param membership: Membership() instance
-        :param notifications: Subject() instance
+        :param notify: Subject() instance
         :return:
         """
 
+        super().__init__()
         self.library = library
         self.lib_membership = membership
-        self.notifications = notifications
+        self.notify = notify
 
     def __str__(self):
         """ Unpacks self.collection for string calls """
@@ -173,8 +174,12 @@ class Reservations(_Aggregator, _JsonIO, _Singleton):
         :return: The ReservationItem instance at front of the queue for the book
                       Returns None if there are no reservations
         """
+        res = self.collection.get(book_uid, None)
+        if res:
+            return res[0]  # Indexes the oldest reservation
+        else:
+            return res
 
-        return self.collection.get(book_uid, None)[0]  # Indexes the oldest reservation
 
     def queue(self, book_uid):
         """
