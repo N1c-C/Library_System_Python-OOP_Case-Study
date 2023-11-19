@@ -4,9 +4,9 @@ Classes that provide methods to create and maintain the library membership
 
 from Aggregator import _Aggregator
 from Observer import Observer
-import CsvIO
-import JsonIO
-import Singleton
+from CsvIO import _CsvIO
+from JsonIO import _JsonIO
+from Singleton import _Singleton
 
 
 class Member(Observer):
@@ -103,7 +103,7 @@ class Member(Observer):
             raise TypeError('Argument should be dictionary of attributes')
 
 
-class Membership(_Aggregator, CsvIO, JsonIO, Singleton):
+class Membership(_Aggregator, _CsvIO, _JsonIO, _Singleton):
     """
     Stores Member() instances in the self.collection dictionary with Member().uid acting as the key
     with the instance as the value.
