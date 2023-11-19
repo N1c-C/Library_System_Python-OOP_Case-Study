@@ -62,7 +62,7 @@ class _Aggregator:
     def save(self):
         """ Calls JsonIO.save() method which in turns calls self._make_json_dict before writing the file"""
 
-        super().save(self._filename)
+        super().save_to_file(self._filename)
 
     def add(self, obj):
         """ Adds an object to self.collection by calling the parent Aggregator.add() method
