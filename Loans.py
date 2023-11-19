@@ -86,7 +86,7 @@ class LoanItem:
         return self.return_date
 
 
-class Loans(_Aggregator, _JsonIO, _Singleton):
+class Loans(_Aggregator, _JsonIO, _CsvIO,  _Singleton):
     """
     Class to store and manipulate all book loans
         Inherits Singleton properties.
