@@ -74,7 +74,7 @@ class _Aggregator:
         else:
             self.collection[obj_uid] = obj
 
-    def get(self, obj_uid):
+    def search(self, *obj_uid):
         """ Method to find an object in self.collection
         :param obj_uid: str :  The unique id for the object to be found
         :returns:  the object with obj_id from self.collections. """

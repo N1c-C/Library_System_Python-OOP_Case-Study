@@ -141,7 +141,7 @@ class Loans(_Aggregator, _JsonIO, _CsvIO,  _Singleton):
 
     def search(self, book_uid, member_uid):
         """:returns: The list of LoanItems with the compound key"""
-        return super().get(book_uid + '-' + member_uid)
+        return super().search(book_uid + '-' + member_uid)
 
     def start_loan(self, book_uid, member_uid):
         """ Starts a new loan using the default date values.
