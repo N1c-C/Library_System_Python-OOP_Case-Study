@@ -168,7 +168,7 @@ class LoansInterface:
         member.add_fine(fine)
 
         # Send Notification
-        self.notify.sendEmail('Loans', FineNotification(member, book, days_over_due, fine))
+        self.notify.send_email('Loans', FineNotification(member, book, days_over_due, fine))
 
     def checkout_books(self, member_of_public, *presented_books):
         """

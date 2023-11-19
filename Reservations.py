@@ -239,6 +239,6 @@ class Reservations(_Aggregator, _JsonIO, _Singleton):
             book.set_reserved()
             res = self.next_res(book.uid)
             member = self.lib_membership.search(res.member_uid)
-            self.notify.sendEmail('Reservations', ResNotification(member, book, res))
+            self.notify.send_email('Reservations', ResNotification(member, book, res))
         else:
             book.set_available()

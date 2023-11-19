@@ -135,4 +135,4 @@ class Subject(_JsonIO):
 
         """
         for observer in self.get_observers(event):
-            self.lib_membership.search(observer).sendEmail(message)
+            self.lib_membership.search(observer).send_email(message)

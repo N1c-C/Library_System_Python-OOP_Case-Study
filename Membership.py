@@ -14,8 +14,8 @@ class Member(Observer):
         Provides methods to access and adjust the attributes
         """
 
-    def __init__(self, uid='', first_name='', last_name='', gender='',
-                 email='', card_number='', no_of_loans='0', fines='0.0'):
+    def __init__(self, uid='', first_name='', last_name='', gender='', email='', card_number='', no_of_loans='0',
+                 fines='0.0'):
         """
 
         :param uid: int as str:
@@ -27,6 +27,7 @@ class Member(Observer):
         :param no_of_loans: int as str : Current number of books on loan
         :param fines: float : The amount owed from fines in pounds
         """
+        super().__init__()
         self.uid = uid
         self.first_name = first_name
         self.last_name = last_name
