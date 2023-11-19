@@ -23,3 +23,13 @@ lib_membership.read_csv(
 lib_main.save()
 
 lib_membership.save()
+
+
+# Clear internal dictionaries
+lib_membership.collection = {}
+lib_main.collection = {}
+
+
+# restore from JSON files
+lib_membership.restore()
+lib_main.restore()

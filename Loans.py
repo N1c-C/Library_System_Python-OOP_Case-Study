@@ -3,9 +3,9 @@ Classes that provide methods to create and maintain loans between Member() and B
 """
 
 from Aggregator import _Aggregator
-import CsvIO
-import JsonIO
-import Singleton
+from CsvIO import _CsvIO
+from JsonIO import _JsonIO
+from Singleton import _Singleton
 from DateStamp import Date
 
 
@@ -86,7 +86,7 @@ class LoanItem:
         return self.return_date
 
 
-class Loans(_Aggregator, CsvIO, JsonIO, Singleton):
+class Loans(_Aggregator, _JsonIO, _Singleton):
     """
     Class to store and manipulate all book loans
         Inherits Singleton properties.

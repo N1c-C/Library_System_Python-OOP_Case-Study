@@ -24,10 +24,13 @@ class CustomDecode(json.JSONDecoder):
         if 'class' in dct.keys():
             if dct['class'] == '__BookItem__':
                 obj = BookItem.create(dct)
+
             if dct['class'] == '__Member__':
                 obj = Member.create(dct)
+
             if dct['class'] == '__LoanItem__':
                 obj = LoanItem.create(dct)
+
             if dct['class'] == '__ReservationItem__':
                 obj = ReservationItem.create(dct)
         return obj
