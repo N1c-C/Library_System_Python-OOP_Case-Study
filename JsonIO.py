@@ -48,12 +48,11 @@ class _JsonIO(ABC):
         """ Saves the list of dict returned from a class' _make_json_dict method to self._filename in json format.
             :param file: str: the file name to save to without a suffix
             :raises Exception: If the file can not be written """
-        print(file)
+
         try:
             with open(file + '.json', mode='w',
                       encoding='utf-8-sig') as JsonFile:
                 json.dump(self._make_json_dict(), JsonFile)
-                print('HERE')
 
         except Exception:
             raise Exception(f'Unable to write to file {file}')
