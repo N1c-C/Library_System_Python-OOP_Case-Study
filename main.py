@@ -87,7 +87,7 @@ import random
 from Observer import Subject
 from Reservations import Reservations
 
-notify = Subject('Subject Observers')
+notify = Subject(lib_membership)
 
 # Setup Observer Events
 notify.add_events('Loans', 'Reservations', 'Books')
@@ -119,4 +119,25 @@ for member_uid in members_of_the_public:
     LoansMenu.checkout_books(person, *books)
 
 
+# Test that multiple loans of a book by the same person are recorded as
+# seperate loans
 
+LoansMenu.checkout_books(lib_membership.search('1'), lib_main.search('120'))
+LoansMenu.return_books(lib_main.search('120'))
+LoansMenu.checkout_books(lib_membership.search('1'), lib_main.search('120'))
+LoansMenu.return_books(lib_main.search('120'))
+LoansMenu.checkout_books(lib_membership.search('1'), lib_main.search('120'))
+LoansMenu.return_books(lib_main.search('120'))
+
+# Returns the instances of LoanItems with compound key '120-1'
+print(lib_loans.search('120','1'))
+
+# Test for fines
+# The same members of puplic now return their books.
+
+for member_uid in members_of_the_public:
+    # Get all the current loans for a member
+    for loan in lib_loans.member_loans(member_uid):
+        # Adjusts the loan start date by a random number of days (max 20) earlier.
+        loan.start_date.set_val(loan.start_date.as_val() - random.randint(1, 20))
+        LoansMenu.return_books(lib_main.search(loan.book_uid))

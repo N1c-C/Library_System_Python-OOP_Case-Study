@@ -85,7 +85,7 @@ class MembersInterface(_JsonIO):
         :param args: list of member_ids in string format who have new cards.
         """
         for member_uid in args:
-            member = self.membership.get(member_uid)
+            member = self.membership.search(member_uid)
             # gets the last digit in card_number and adds 1
             member.card_number = member.uid + str(int(member.card_number[-1]) + 1)
 
@@ -219,7 +219,7 @@ class LoansInterface:
                             # starts loan & updates: member.loans, book.status
                             self.loans.start_loan(book.uid, member.uid)
                             member.inc_loans()
-                            book.set_onloan()
+                            book.set_on_loan()
                             # Remove person from front of reservation queue
                             self.lib_reservations.cancel_res(book.uid, member.uid)
 
@@ -311,7 +311,7 @@ class ReservationInterface:
             print('You will be contacted when it becomes available')
         else:
             print('The book is available now')
-        if not book.is_onloan():
+        if not book.is_on_loan():
             book.set_reserved()
         # Stores reservation to JSON file
         self.reservations.save()
