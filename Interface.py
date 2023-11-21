@@ -190,7 +190,7 @@ class LoansInterface:
 
         if member.has_fine():
             print(f'{member.first_name} {member.last_name} has an '
-                  f'overdue fine of £{member.fines}')
+                  f'overdue fine of £{member.fines}.\n Payment must be made before books can be loaned')
         else:
             for uid in presented_books:
 
@@ -200,6 +200,11 @@ class LoansInterface:
 
                 if not self._has_max_loans(member):
 
+                    if book.is_on_loan():
+                        libmem = self.membership.search(self.loans.on_loan_to(book.uid))
+                        print(f'{book.title}: is already on loan', end='')
+                        print(f' to {libmem.first_name} {libmem.last_name}: Unable to loan it')
+
                     if book.is_available():
                         # starts loan & updates: member.loans, book.status
                         self.loans.start_loan(book.uid, member.uid)
@@ -208,7 +213,8 @@ class LoansInterface:
 
                         # Add member to Loans Observers for overdue books etc
                         self.notify.register('Loans', member.uid)
-                    elif book.is_reserved():
+
+                    if book.is_reserved():
                         """" check to see if the member is the first person
                             in the reservation que. If they are then they
                             can loan the book"""
@@ -222,14 +228,17 @@ class LoansInterface:
                             book.set_on_loan()
                             # Remove person from front of reservation queue
                             self.lib_reservations.cancel_res(book.uid, member.uid)
-
                             # Add the member to the Loans Observers
                             self.notify.register('Loans', member.uid)
-
-                    elif book.is_on_loan():
-                        libmem = self.membership.search(self.loans.on_loan_to(book.uid))
-                        print(f'{book.title}: is already on loan', end='')
-                        print(f' to {libmem.first_name} {libmem.last_name}: Unable to loan it')
+                        else:
+                            print('\n', '-' * 70)
+                            print('Console:')
+                            print('The book is reserved by another member.')
+                            if member.uid in self.lib_reservations.search(book.uid):
+                                print('\n Your reservation is recorded.'
+                                      'You will be notified when the book is available for you to loan')
+                            else:
+                                print('Would the member like to reserve this book?')
 
                 else:
                     break  # Max loans reached. Stop checking out books
