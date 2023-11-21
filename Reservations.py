@@ -180,7 +180,6 @@ class Reservations(_Aggregator, _JsonIO, _Singleton):
         else:
             return res
 
-
     def queue(self, book_uid):
         """
         Gets the queue of reservations for a book

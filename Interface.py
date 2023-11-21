@@ -234,7 +234,7 @@ class LoansInterface:
                             print('\n', '-' * 70)
                             print('Console:')
                             print('The book is reserved by another member.')
-                            if member.uid in self.lib_reservations.search(book.uid):
+                            if member.uid in self.lib_reservations.queue(book.uid):
                                 print('\n Your reservation is recorded.'
                                       'You will be notified when the book is available for you to loan')
                             else:
