@@ -185,7 +185,7 @@ class Reservations(_Aggregator, _JsonIO, _Singleton):
         Gets the queue of reservations for a book
 
         :param book_uid: int as str:
-        :return: List: The list of reservations for the given book
+        :return: List of ResItem(): The list of reservations for the given book
                       Returns None if there are no reservations
         """
         return self.collection.get(book_uid, None)

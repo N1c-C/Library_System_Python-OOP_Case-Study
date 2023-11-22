@@ -56,9 +56,14 @@ class MembersInterface(_JsonIO):
         """
         new_mem = Member().create(kwargs)
         new_mem.uid = self.membership.next_id()
+
         self.membership.add(new_mem)
         self.membership.save()
         self.new_members.append(new_mem)
+
+        # Add them to the NewCard event
+        self.notify.register('NewCards', new_mem.uid)
+
         self.save()
         self.restore()
 
@@ -89,12 +94,14 @@ class MembersInterface(_JsonIO):
             # gets the last digit in card_number and adds 1
             member.card_number = member.uid + str(int(member.card_number[-1]) + 1)
 
-            # Notifications
-            self.notify.send_email('NewCards', CardNotification(member))
             print('\n', '-' * 70)
             print('Console')
             print(f'\nCard details for {member.first_name} {member.last_name} '
                   f'have been updated with card number: {member.card_number}')
+
+            # Notifications
+            print('member card notice')
+            self.notify.send_email('NewCards', CardNotification(member))
 
         self.membership.save()
 
@@ -210,6 +217,8 @@ class LoansInterface:
                         self.loans.start_loan(book.uid, member.uid)
                         member.inc_loans()
                         book.set_on_loan()
+                        print(f'{book.title}: is {book.status}', end='')
+                        print(f' to {member.first_name} {member.last_name}')
 
                         # Add member to Loans Observers for overdue books etc
                         self.notify.register('Loans', member.uid)
@@ -234,11 +243,12 @@ class LoansInterface:
                             print('\n', '-' * 70)
                             print('Console:')
                             print('The book is reserved by another member.')
-                            if member.uid in self.lib_reservations.queue(book.uid):
-                                print('\n Your reservation is recorded.'
+                            has_res = self.lib_reservations.queue_pos(book.uid, member.uid)
+                            if has_res:
+                                print(f'\nYou are currently in position {has_res} of the queue for this book\n'
                                       'You will be notified when the book is available for you to loan')
                             else:
-                                print('Would the member like to reserve this book?')
+                                print('Would the member like to reserve this book?\n')
 
                 else:
                     break  # Max loans reached. Stop checking out books
