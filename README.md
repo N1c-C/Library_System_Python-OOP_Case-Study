@@ -41,8 +41,9 @@ Implements an Observer design pattern to automatically send notifications when:
 
  - A returned book was overdue, and a fine is payable.
 
-The system is easily expanded for other notifications. All notifications are sent by email using a `sendEmail()` method. (Currently, these are just displayed on the console).
+The system is easily expanded for other notifications. (Currently, these are just displayed on the console).
 
+## The Included [Jupyter Notebook](https://github.com/N1c-C/Library_System_Python-OOP_Case-Study/blob/master/Library.ipynb) demonstrates the system
 
 ## The system design is documented in the project [WIKI](https://github.com/N1c-C/Python-OOP-Case-Study/wiki)
 
